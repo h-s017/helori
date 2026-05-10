@@ -335,41 +335,41 @@ body::before{display:none;}
 <script>
 const GS_URL="https://script.google.com/macros/s/AKfycbzZ-i9zat_U57yJmHkTnEhIYsxNU3l5UMpmHCLkivz06PVtrccQhfS6SzTwnoewTO5t/exec";
 const IMGS={
-  A:"download_cards/01_Misti_迷絲緹.jpg",
-  B:"download_cards/02_Flori_芙蘿莉.jpg",
-  C:"download_cards/03_Velmo_維爾默.jpg",
-  D:"download_cards/04_Ambra_安布拉.jpg",
-  E:"download_cards/05_Nocta_諾克塔.jpg",
-  F:"download_cards/06_Tealu_緹露.jpg",
-  G:"download_cards/07_Mossi_墨茜.jpg"
+  A:"download_cards/misti.jpg",
+  B:"download_cards/flori.jpg",
+  C:"download_cards/velmo.jpg",
+  D:"download_cards/ambra.jpg",
+  E:"download_cards/nocta.jpg",
+  F:"download_cards/tealu.jpg",
+  G:"download_cards/mossi.jpg"
 };
 const CARD_IMGS={
-  A:"download_cards/01_Misti_迷絲緹.jpg",
-  B:"download_cards/02_Flori_芙蘿莉.jpg",
-  C:"download_cards/03_Velmo_維爾默.jpg",
-  D:"download_cards/04_Ambra_安布拉.jpg",
-  E:"download_cards/05_Nocta_諾克塔.jpg",
-  F:"download_cards/06_Tealu_緹露.jpg",
-  G:"download_cards/07_Mossi_墨茜.jpg"
+  A:"download_cards/misti.jpg",
+  B:"download_cards/flori.jpg",
+  C:"download_cards/velmo.jpg",
+  D:"download_cards/ambra.jpg",
+  E:"download_cards/nocta.jpg",
+  F:"download_cards/tealu.jpg",
+  G:"download_cards/mossi.jpg"
 };
 
 const AVATAR_IMGS={
-  A:"assets/avatars/misti_avatar.jpg",
-  B:"assets/avatars/flori_avatar.jpg",
-  C:"assets/avatars/velmo_avatar.jpg",
-  D:"assets/avatars/ambra_avatar.jpg",
-  E:"assets/avatars/nocta_avatar.jpg",
-  F:"assets/avatars/tealu_avatar.jpg",
-  G:"assets/avatars/mossi_avatar.jpg"
+  A:"assets/avatars/misti.jpg",
+  B:"assets/avatars/flori.jpg",
+  C:"assets/avatars/velmo.jpg",
+  D:"assets/avatars/ambra.jpg",
+  E:"assets/avatars/nocta.jpg",
+  F:"assets/avatars/tealu.jpg",
+  G:"assets/avatars/mossi.jpg"
 };
 const CORRECT_AVATAR_IMGS={
-  A:"assets/avatars/misti_avatar.jpg",
-  B:"assets/avatars/flori_avatar.jpg",
-  C:"assets/avatars/velmo_avatar.jpg",
-  D:"assets/avatars/ambra_avatar.jpg",
-  E:"assets/avatars/nocta_avatar.jpg",
-  F:"assets/avatars/tealu_avatar.jpg",
-  G:"assets/avatars/mossi_avatar.jpg"
+  A:"assets/avatars/misti.jpg",
+  B:"assets/avatars/flori.jpg",
+  C:"assets/avatars/velmo.jpg",
+  D:"assets/avatars/ambra.jpg",
+  E:"assets/avatars/nocta.jpg",
+  F:"assets/avatars/tealu.jpg",
+  G:"assets/avatars/mossi.jpg"
 };
 function getCorrectAvatar(k){return CORRECT_AVATAR_IMGS[k]||AVATAR_IMGS[k]||IMGS[k]||'';}
 const ORDER=['A','B','C','D','E','F','G'];
@@ -519,28 +519,39 @@ function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
   return y;
 }
 const DOWNLOAD_CARD_FILES = {
-  A: "download_cards/01_Misti_迷絲緹.jpg",
-  B: "download_cards/02_Flori_芙蘿莉.jpg",
-  C: "download_cards/03_Velmo_維爾默.jpg",
-  D: "download_cards/04_Ambra_安布拉.jpg",
-  E: "download_cards/05_Nocta_諾克塔.jpg",
-  F: "download_cards/06_Tealu_緹露.jpg",
-  G: "download_cards/07_Mossi_墨茜.jpg"
+  A: "download_cards/misti.jpg",
+  B: "download_cards/flori.jpg",
+  C: "download_cards/velmo.jpg",
+  D: "download_cards/ambra.jpg",
+  E: "download_cards/nocta.jpg",
+  F: "download_cards/tealu.jpg",
+  G: "download_cards/mossi.jpg"
 };
 
-function downloadAtlasCard(){
+async function downloadAtlasCard(){
   const payload=window.currentAtlasPayload;
   if(!payload||!payload.profile){toast('請先完成測驗');return;}
   const p=payload.profile, key=window.currentAtlasKey||'A';
   const href=DOWNLOAD_CARD_FILES[key];
   if(!href){toast('找不到對應的圖鑑卡');return;}
-  const a=document.createElement('a');
-  a.download='Helori_Atlas_'+(p.short||'Result')+'.jpg';
-  a.href=href;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  toast('圖鑑卡已下載');
+  try{
+    const res=await fetch(href,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status+' '+href);
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.download='helori_atlas_'+(p.short||'result').toLowerCase()+'.jpg';
+    a.href=url;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),800);
+    toast('圖鑑卡已下載');
+  }catch(err){
+    console.error(err);
+    window.open(href,'_blank');
+    toast('無法自動下載，已嘗試開啟圖鑑卡');
+  }
 }
 
 const downloadCardButton=document.getElementById('downloadCardBtn');if(downloadCardButton){downloadCardButton.addEventListener('click',downloadAtlasCard);}
